@@ -1,0 +1,12 @@
+Terminal commands
+
+pwd:- Print working directory
+ls:- list available files in the directory
+ls -l :- list available files in the directory with more details
+mkdir:- make a new directory
+cd:- change directory (going to a certain directory)
+use up arrow key to go back to previous command(autotype last command again)
+gcc (filename.extension) :- compile code
+./ (filename.extension) :- run compiled file
+gcc (filename.extension) -0 (output_filename.exe)   / .out for macbooks
+
