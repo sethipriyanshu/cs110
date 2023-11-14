@@ -27,36 +27,34 @@ Person *createPerson(char *first, char *last, int height, int weight, Person *ne
 
 ///////////////////////////////////////////////////////////////
 Person *insertByHeight(Person *head, Person *newPerson) {
-    if (head == NULL || (head->height < newPerson->height) || 
-        (head->height == newPerson->height && head->weight > newPerson->weight)) {
-        newPerson->nextHeight = head;
-        return newPerson;
-    }
-    Person *current = head;
-    while (current->nextHeight != NULL && 
-           (current->nextHeight->height < newPerson->height || 
-           (current->nextHeight->height == newPerson->height && current->nextHeight->weight > newPerson->weight))) {
+    Person *current = head, *prev = NULL;
+    while (current != NULL && (current->height > newPerson->height || 
+          (current->height == newPerson->height && current->weight <= newPerson->weight))) {
+        prev = current;
         current = current->nextHeight;
     }
-    newPerson->nextHeight = current->nextHeight;
-    current->nextHeight = newPerson;
+    newPerson->nextHeight = current;
+    if (prev == NULL) {
+        head = newPerson;
+    } else {
+        prev->nextHeight = newPerson;
+    }
     return head;
 }
 
 Person *insertByWeight(Person *head, Person *newPerson) {
-    if (head == NULL || (head->weight > newPerson->weight) || 
-        (head->weight == newPerson->weight && head->height < newPerson->height)) {
-        newPerson->nextWeight = head;
-        return newPerson;
-    }
-    Person *current = head;
-    while (current->nextWeight != NULL && 
-           (current->nextWeight->weight < newPerson->weight || 
-           (current->nextWeight->weight == newPerson->weight && current->nextWeight->height < newPerson->height))) {
+    Person *current = head, *prev = NULL;
+    while (current != NULL && (current->weight < newPerson->weight || 
+          (current->weight == newPerson->weight && current->height >= newPerson->height))) {
+        prev = current;
         current = current->nextWeight;
     }
-    newPerson->nextWeight = current->nextWeight;
-    current->nextWeight = newPerson;
+    newPerson->nextWeight = current;
+    if (prev == NULL) {
+        head = newPerson;   
+    } else {
+        prev->nextWeight = newPerson;
+    }
     return head;
 }
 void freePerson(Person *person) {
@@ -94,7 +92,7 @@ Person *removeNode(Person *head, Person *nodeToRemove, int isHeightList) {
     return head;
 }
 PersonList *add(PersonList *list, char *first, char *last, int height, int weight) {
-    // Check if person already exists
+    // Check if person already exists in height list
     Person *ptr = list->headHeightList;
     while (ptr != NULL) {
         if (strcmp(ptr->first, first) == 0 && strcmp(ptr->last, last) == 0) {
@@ -102,6 +100,16 @@ PersonList *add(PersonList *list, char *first, char *last, int height, int weigh
             return list;
         }
         ptr = ptr->nextHeight;
+    }
+
+    // Check if person already exists in weight list
+    ptr = list->headWeightList;
+    while (ptr != NULL) {
+        if (strcmp(ptr->first, first) == 0 && strcmp(ptr->last, last) == 0) {
+            printf("Error: %s %s already exists in the list\n", first, last);
+            return list;
+        }
+        ptr = ptr->nextWeight;
     }
 
     // Create new person node
@@ -195,53 +203,39 @@ PersonList *removePerson(PersonList *list, char *first, char *last) {
 
 PersonList *updateHeight(PersonList *list, char *first, char *last, int height)
 { 
-	Person *ptr = list->headHeightList;
-    while (ptr != NULL) {
-        if (strcmp(ptr->first, first) == 0 && strcmp(ptr->last, last) == 0) {
-            break;
-        }
-        ptr = ptr->nextHeight;
-    }
+    Person *ptr = search(list, first, last);
     if (ptr == NULL) {
         printf("Error: %s %s does not exist in the list\n", first, last);
         return list;
     }
-
-    // Update height of person
-    ptr->height = height;
 
     // Remove person from headHeightList
     list->headHeightList = removeNode(list->headHeightList, ptr, true);
 
-    // Insert person into headHeightList in correct order
-    list->headHeightList = insertByHeight(list->headHeightList, ptr);
+    // Create new person with updated height
+    Person *newPerson = createPerson(first, last, height, ptr->weight, NULL, NULL);
+
+    // Insert new person into headHeightList in correct order
+    list->headHeightList = insertByHeight(list->headHeightList, newPerson);
 
     return list;
-	return list;
 }
 
 PersonList *updateWeight(PersonList *list, char *first, char *last, int weight) {
-    // Check if person exists
-    Person *ptr = list->headWeightList;
-    while (ptr != NULL) {
-        if (strcmp(ptr->first, first) == 0 && strcmp(ptr->last, last) == 0) {
-            break;
-        }
-        ptr = ptr->nextWeight;
-    }
+    Person *ptr = search(list, first, last);
     if (ptr == NULL) {
         printf("Error: %s %s does not exist in the list\n", first, last);
         return list;
     }
 
-    // Update weight of person
-    ptr->weight = weight;
-
     // Remove person from headWeightList
     list->headWeightList = removeNode(list->headWeightList, ptr, false);
 
-    // Insert person into headWeightList in correct order
-    list->headWeightList = insertByWeight(list->headWeightList, ptr);
+    // Create new person with updated weight
+    Person *newPerson = createPerson(first, last, ptr->height, weight, NULL, NULL);
+
+    // Insert new person into headWeightList in correct order
+    list->headWeightList = insertByWeight(list->headWeightList, newPerson);
 
     return list;
 }
