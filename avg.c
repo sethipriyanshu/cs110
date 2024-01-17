@@ -12,3 +12,4 @@ int main(void){
     printf("The average is %f",num_avg);
     return 0;
 }
+// final
